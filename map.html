@@ -1,0 +1,107 @@
+
+  <label for="instagram">Latitude </label>
+  <input type="text" class="form-control" name="latitude" id="latitude" placeholder="Latitude" />
+
+  <label for="instagram">Longitude </label>
+  <input type="text" class="form-control" name="longitude" id="longitude" placeholder="Longitude" />
+
+
+  <input id="address12" type="textbox" placeholder="Type an Address">
+  <input id="submit" type="button" value="Search">
+<div id="myMap" style="height: 400px; width: 900px;"></div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&key=AIzaSyCQkO6nkG0nQTSWYYxMqb2xm5JoxxAji6U">
+</script>
+<script type="text/javascript"> 
+    var map;
+    var myLatlng = new google.maps.LatLng(23.9010413,90.4088223);
+    var geocoder = new google.maps.Geocoder();
+    var infowindow = new google.maps.InfoWindow();
+    function initialize(){
+        var mapOptions = {
+            zoom: 12,
+            center: myLatlng,
+            gestureHandling: 'greedy',
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+        map = new google.maps.Map(document.getElementById("myMap"), mapOptions);
+
+        var marker = new google.maps.Marker({
+            map: map,
+            position: myLatlng,
+            draggable: true 
+        });
+
+        geocoder.geocode({'latLng': myLatlng }, function(results, status) {
+            if (status == google.maps.GeocoderStatus.OK) {
+                if (results[0]) {
+                    $('#latitude,#longitude').show();
+                    $('#latitude').val(marker.getPosition().lat());
+                    $('#longitude').val(marker.getPosition().lng());
+                    infowindow.setContent(results[0].formatted_address);
+                    infowindow.open(map, marker);
+                }
+            }
+        });
+
+        google.maps.event.addListener(marker, 'dragend', function() {
+
+            geocoder.geocode({'latLng': marker.getPosition()}, function(results, status) {
+                if (status == google.maps.GeocoderStatus.OK) {
+                    if (results[0]) {
+                        $('#latitude').val(marker.getPosition().lat());
+                        $('#longitude').val(marker.getPosition().lng());
+                        infowindow.setContent(results[0].formatted_address);
+                        infowindow.open(map, marker);
+                    }
+                }
+            });
+        });
+
+        document.getElementById('submit').addEventListener('click', function() {
+            geocodeAddress(geocoder, map);
+        });
+
+        function geocodeAddress(geocoder, resultsMap) {
+            var address = document.getElementById('address12').value;
+            geocoder.geocode({'address': address}, function(results, status) {
+                if (status === 'OK') {
+                    resultsMap.setCenter(results[0].geometry.location);                   
+
+                    marker.setPosition(results[0].geometry.location);
+
+                    geocoder.geocode({'latLng': marker.getPosition() }, function(results, status) {
+                        if (status == google.maps.GeocoderStatus.OK) {
+                            if (results[0]) {
+                                $('#latitude,#longitude').show();
+                                $('#latitude').val(marker.getPosition().lat());
+                                $('#longitude').val(marker.getPosition().lng());
+                                infowindow.setContent(results[0].formatted_address);
+                                infowindow.open(map, marker);
+                            }
+                        }
+                    });
+
+                    google.maps.event.addListener(marker, 'dragend', function() {
+
+                        geocoder.geocode({'latLng': marker.getPosition()}, function(results, status) {
+                            if (status == google.maps.GeocoderStatus.OK) {
+                                if (results[0]) {
+                                    $('#latitude').val(marker.getPosition().lat());
+                                    $('#longitude').val(marker.getPosition().lng());
+                                    infowindow.setContent(results[0].formatted_address);
+                                    infowindow.open(map, marker);
+                                }
+                            }
+                        });
+                    });
+                } 
+                else {
+                    alert('Geocode was not successful for the following reason: ' + status);
+                }
+            });
+        }
+
+    }
+    google.maps.event.addDomListener(window, 'load', initialize);
+</script>
